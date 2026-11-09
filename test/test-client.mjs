@@ -18,7 +18,7 @@ const mod = captured.factory((name) => {
   throw new Error("unexpected require: " + name);
 });
 assert.equal(typeof mod.apply, "function");
-assert.equal(mod.VERSION, "0.1.3");
+assert.equal(mod.VERSION, "0.1.4");
 assert.equal(typeof mod.__test.waitForFace, "function");
 assert.deepEqual(mod.inject, ["slots", "locale", "remote", "sessions"]);
 
@@ -101,4 +101,28 @@ assert.deepEqual(injected, ["sidebar.panellist", "main"]);
 assert.equal(registeredDicts.length, 1, "locale dictionary registered once");
 assert.equal(registeredDicts[0][0], "skill-runner");
 assert.equal(registeredDicts[0][1].en.panel, "Skill Runner");
+// v0.1.4: namespace resolution via ctx.get("remote.<namespace>") — the nested
+// cordis service key the gateway's createNamespace registers (shipped
+// consumers inject it; a self-mounting plugin resolves it instead).
+{
+  let captured = null;
+  globalThis.window = { __ModuleLoader__: { load(mod) { captured = mod; } } };
+  await import("../lib/client.js?v=" + Date.now());
+  const mod2 = captured.factory((name) => {
+    if (name === "react") return reactStub;
+    throw new Error("unexpected require: " + name);
+  });
+  const face = { catalog: async () => ({ ok: true }) };
+  const mockCtx2 = {
+    remote: { $mount: async () => () => {} },
+    get: (k) => (k === "remote.skillRunner" ? face : undefined),
+    slots: { inject() {} },
+    sessions: {},
+    on() {},
+    logger: { warn() {} },
+  };
+  mod2.apply(mockCtx2);
+  const resolved = await mod2.__test.waitForFace(2000);
+  assert.equal(resolved, face, "waitForFace resolves the nested remote.skillRunner service");
+}
 console.log("test-client: all assertions passed");

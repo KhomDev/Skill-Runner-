@@ -98,6 +98,18 @@ test/smoke-workspace.mjs  live read-only scan of the real workspace
 
 ## Version
 
+0.1.4 — 2026-11-09. The actual live-GUI root cause, found with a probe the
+panel itself rendered: the client namespace WAS mounted — "remote
+namespace unavailable" was my resolution bug. Client Remote namespaces are
+nested cordis services under "remote.<namespace>"; shipped consumers get
+them via injection (ui-skill injects "remote.skills"), and a plugin that
+creates its own namespace through $mount cannot inject it (circular
+dependency — the mount itself provides the service). The panel now resolves
+the namespace the way cordis does — ctx.get("remote.skillRunner") — with
+the old property form kept as a fallback. Unit-tested via waitForFace.
+Also: $mount rejections are no longer swallowed (the real error shows in
+the panel status), and the temporary boot diagnostics are removed.
+
 0.1.3 — 2026-11-09. Security-and-quality audit pass over v0.1.2 (12 fixes):
 host — in-flight scan dedup (refresh racing the client poll no longer
 double-scans the workspace), host-path scrubbing of raw fs error text,
