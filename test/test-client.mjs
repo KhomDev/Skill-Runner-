@@ -18,7 +18,7 @@ const mod = captured.factory((name) => {
   throw new Error("unexpected require: " + name);
 });
 assert.equal(typeof mod.apply, "function");
-assert.equal(mod.VERSION, "0.1.4");
+assert.equal(mod.VERSION, "0.1.5");
 assert.equal(typeof mod.__test.waitForFace, "function");
 assert.deepEqual(mod.inject, ["slots", "locale", "remote", "sessions"]);
 

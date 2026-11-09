@@ -98,6 +98,16 @@ test/smoke-workspace.mjs  live read-only scan of the real workspace
 
 ## Version
 
+0.1.5 — 2026-11-09. The empty-screen crash, reproduced and fixed end-to-end
+on a live boot: remote invocations resolve to {ok, value} envelopes (the
+gateway client's invoke carries the payload under .value, failures under
+.error) — v0.1.4 read the envelope as the payload, so catalog.skills was
+undefined and the panel crashed its main slot ("Cannot read properties of
+undefined (reading 'map')"), leaving a blank page. The panel now unwraps
+every remote result; failures surface through the panel status line.
+Verified live: the panel renders the full catalog (37 skills / 14
+DSH-native / 71 protocols), both picker popups, and the prompt preview.
+
 0.1.4 — 2026-11-09. The actual live-GUI root cause, found with a probe the
 panel itself rendered: the client namespace WAS mounted — "remote
 namespace unavailable" was my resolution bug. Client Remote namespaces are
