@@ -16,8 +16,9 @@ assert.equal(fmFolded.dshAdapted, true);
 
 // --- service ---
 const ctx = { set(k, v) { this[k] = v; }, reflect: {}, logger: { info() {}, warn() {} } };
-const svc = apply(ctx, { workspaceRoot: FIX, catalogTtlMs: 60000 });
-assert.equal(ctx.skillRunner, svc, "service registered under ctx.skillRunner");
+apply(ctx, { workspaceRoot: FIX, catalogTtlMs: 60000 });
+const svc = ctx.skillRunner;
+assert.ok(svc, "apply() registers the service under ctx.skillRunner and returns nothing (Cordis Invalid-effect rule)");
 
 const cat = await svc.catalog();
 assert.equal(cat.ok, true);

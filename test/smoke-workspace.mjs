@@ -4,7 +4,8 @@ import { apply } from "../lib/index.js";
 
 const workspaceRoot = process.argv[2] ?? "C:\\Users\\d3fal\\Desktop\\hustle\\BOUNTY\\audit";
 const ctx = { set(k, v) { this[k] = v; }, reflect: {}, logger: { info() {}, warn() {} } };
-const svc = apply(ctx, { workspaceRoot });
+apply(ctx, { workspaceRoot });
+const svc = ctx.skillRunner;
 
 const t0 = Date.now();
 const cat = await svc.catalog();

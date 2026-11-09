@@ -1,6 +1,6 @@
 {
   "name": "khomdev-skill-runner",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Skill Runner for the KhomDev audit workspace: discover SKILLS/ collections (Pashov, Trail of Bits, Web3 Bounty Hunting + dynamic others), pick a protocol from PROTOCOLS/, compose a contract-safe run prompt, and dispatch it to a DSH session.",
   "type": "module",
   "main": "lib/index.js",

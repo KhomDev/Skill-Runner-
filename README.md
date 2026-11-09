@@ -95,6 +95,16 @@ test/smoke-workspace.mjs  live read-only scan of the real workspace
 
 ## Version
 
+0.1.2 — 2026-11-09. The second half of the v0.1.0 live failure: apply()
+returned the service object, but Cordis validates a plugin's return value
+(function disposer | null/undefined | promise of those | iterator) and a
+plain-object return is the "Invalid effect" failure class — the fiber start
+failed and the host plugin never registered, which is what put the
+"skillRunner remote namespace unavailable" error on the panel and a load
+error on the Plugins page. apply() now returns nothing; the service
+registers through its base constructor as ctx.skillRunner (tests updated to
+match). With v0.1.1's gateway markers this completes the host-side fix.
+
 0.1.1 — 2026-11-09. Fixes the v0.1.0 live-GUI failure "skillRunner remote
 namespace unavailable": the Typert Gateway's source-mode discovery only
 resolves endpoints whose methods are carried on the service prototype's
