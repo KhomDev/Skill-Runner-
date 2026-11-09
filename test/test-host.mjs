@@ -14,6 +14,12 @@ const fmFolded = __internals.parseFrontmatter("---\nname: folded\ndescription: >
 assert.equal(fmFolded.description, "A folded description across lines.");
 assert.equal(fmFolded.dshAdapted, true);
 
+// The closer is a full line of dashes: a "----" rule (or a "---note" line)
+// inside the frontmatter must not terminate it early.
+const fmRule = __internals.parseFrontmatter("---\nname: ruled\ndescription: x\n----\nallowed-tools: Read Grep\n---note\n---\n");
+assert.equal(fmRule.name, "ruled");
+assert.equal(fmRule.allowedTools, "Read Grep", "keys after an interior dash rule survive");
+
 // --- service ---
 const ctx = { set(k, v) { this[k] = v; }, reflect: {}, logger: { info() {}, warn() {} } };
 apply(ctx, { workspaceRoot: FIX, catalogTtlMs: 60000 });
@@ -65,5 +71,16 @@ assert.deepEqual(svcProto[RMD].methods.map((m) => m.method).sort(), ["catalog", 
 for (const marker of svcProto[RMD].methods) {
   assert.equal(marker.invocation.kind, "direct");
   assert.ok(Object.isFrozen(marker), "marker frozen");
+}
+
+// In-flight dedup: two concurrent catalog() calls on a cold cache must share
+// one production (same result object identity), not re-scan the tree twice.
+{
+  const ctx2 = { set(k, v) { this[k] = v; }, reflect: {}, logger: { info() {}, warn() {} } };
+  apply(ctx2, { workspaceRoot: FIX, catalogTtlMs: 60000 });
+  const svc2 = ctx2.skillRunner;
+  const [a, b] = await Promise.all([svc2.catalog(), svc2.catalog()]);
+  assert.equal(a, b, "concurrent catalog() calls join the same in-flight scan");
+  assert.equal(a.ok, true);
 }
 console.log("test-host: all assertions passed (base=" + meta.serviceBase + ")");

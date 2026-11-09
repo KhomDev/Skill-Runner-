@@ -49,7 +49,9 @@ test/smoke-workspace.mjs  live read-only scan of the real workspace
 ## Install
 
 1. Plugins page → install from the local path
-   `C:Usersd3faldevkhomdev-skill-runner` (repo root **is** the package), or
+   `C:/Users/d3fal/dev/khomdev-skill-runner` (repo root **is** the package; forward
+   slashes are the portable spelling — the backslash form is
+   `C:\Users\d3fal\dev\khomdev-skill-runner`), or
    replicate manually in the profile (`~/.dsh/profiles/desktop`):
    - `package.json`: `dependencies["khomdev-skill-runner"] = "link:C:/Users/d3fal/dev/khomdev-skill-runner"`
      and append `"khomdev-skill-runner"` to `dsh.profile.bundles`.
@@ -64,7 +66,8 @@ test/smoke-workspace.mjs  live read-only scan of the real workspace
 
 1. Plugins page lists `khomdev-skill-runner` without error.
 2. Sidebar shows **Skill Runner**; the panel loads the live catalog
-   (37 skills / 71 protocols at build time) and the protocol grid renders.
+   (37 skills / 71 protocols at build time) and the protocol and skill picker
+   popups open from the summary rows.
 3. `node test/test-host.mjs`, `node test/test-client.mjs`,
    `node test/smoke-workspace.mjs` all pass.
 4. Pick a protocol + a few skills, review the preview, Send to the session:
@@ -94,6 +97,20 @@ test/smoke-workspace.mjs  live read-only scan of the real workspace
 - DSH target: 0.2.0-rc.2 (desktop channel is nightly — re-verify on updates).
 
 ## Version
+
+0.1.3 — 2026-11-09. Security-and-quality audit pass over v0.1.2 (12 fixes):
+host — in-flight scan dedup (refresh racing the client poll no longer
+double-scans the workspace), host-path scrubbing of raw fs error text,
+lastErrors capped at 20, frontmatter closer no longer false-closes on
+"----" rules; client — composed-prompt hardening (every third-party
+interpolation flattened to one line so crafted skill/protocol text cannot
+forge prompt lines), remote-mount teardown-race guard, prompt-throw retires
+the submission echo (no phantom queued message), failed feed errors now
+render instead of silently emptying the pickers, sidebar label wired through
+the locale service, version sites synced; docs — install path restored,
+stale grid claim reworded. Tests extended: concurrent-dedup identity,
+frontmatter-closer regression, newline-smuggling payloads, locale-aware
+mock.
 
 0.1.2 — 2026-11-09. The second half of the v0.1.0 live failure: apply()
 returned the service object, but Cordis validates a plugin's return value
