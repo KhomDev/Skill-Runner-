@@ -18,7 +18,9 @@ const mod = captured.factory((name) => {
   throw new Error("unexpected require: " + name);
 });
 assert.equal(typeof mod.apply, "function");
-assert.deepEqual(mod.inject, ["slots", "locale", "remote", "sessions"]);
+assert.equal(mod.VERSION, "0.1.1");
+assert.equal(typeof mod.__test.waitForFace, "function");
+assert.deepEqual(mod.inject, ["slots", "remote", "sessions"]);
 
 const { buildPrompt } = mod.__test;
 const prompt = buildPrompt({

@@ -54,4 +54,15 @@ assert.equal(meta.plugin, "khomdev-skill-runner");
 assert.equal(meta.config.workspaceRoot, FIX);
 const r = await svc.refresh();
 assert.equal(r.ok, true);
+// v0.1.1: the Typert Gateway only resolves endpoints carried on the service
+// prototype's version-1 Remote-method descriptor (what @Remote writes).
+const RMD = "@deepseek-ai/dsh-typert-protocol/remote-methods";
+const svcProto = Object.getPrototypeOf(svc);
+assert.ok(Object.prototype.hasOwnProperty.call(svcProto, RMD), "service carries the Remote-method descriptor");
+assert.equal(svcProto[RMD].version, 1);
+assert.deepEqual(svcProto[RMD].methods.map((m) => m.method).sort(), ["catalog", "meta", "protocols", "refresh"]);
+for (const marker of svcProto[RMD].methods) {
+  assert.equal(marker.invocation.kind, "direct");
+  assert.ok(Object.isFrozen(marker), "marker frozen");
+}
 console.log("test-host: all assertions passed (base=" + meta.serviceBase + ")");

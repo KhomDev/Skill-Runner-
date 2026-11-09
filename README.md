@@ -11,7 +11,7 @@ One package, two faces (khomdev-audit-ops pattern):
 | Face | File | What it does |
 |---|---|---|
 | Host plugin | `lib/index.js` (package main) | Read-only scans of `SKILLS/` (frontmatter name/description, source path, collection), `.dsh/skills/` (loadability + `dsh-adapted` native markers), and `PROTOCOLS/` (language guess, capped file counts, tests, git branch). Serves the `skillRunner` Typert remote namespace (`catalog` / `protocols` / `meta` / `refresh`). No spawns, no writes. |
-| Browser bundle | `lib/client.js` (`./client` export, `dsh.client` declaration) | The **Skill Runner** web panel: gradient header, protocol cards, collection chips + skill grid with search, run-mode cards (parallel subagent lanes / single pass), operator focus, session picker, live prompt preview, Send / Copy. Sending queues ONE user message via `sessions.using(...).prompt([{type:"text",text}], "queue"|"steer")`. |
+| Browser bundle | `lib/client.js` (`./client` export, `dsh.client` declaration) | The **Skill Runner** web panel: gradient header, protocol + skill **popup picker dialogs** (searchable, collection-filtered, internally scrolled), run-mode cards (parallel subagent lanes / single pass), operator focus, session picker, collapsible prompt preview, Send / Copy. The panel owns its scrolling (flex column root + internal scroll + pinned action bar). Sending queues ONE user message via `sessions.using(...).prompt([{type:"text",text}], "queue"|"steer")`. |
 
 The bundle's `cordis.patch.yml` (`dsh.bundle.patch`) inserts the package itself
 as one loader entry — one entry serves both faces.
@@ -95,4 +95,17 @@ test/smoke-workspace.mjs  live read-only scan of the real workspace
 
 ## Version
 
-0.1.0 — 2026-11-09.
+0.1.1 — 2026-11-09. Fixes the v0.1.0 live-GUI failure "skillRunner remote
+namespace unavailable": the Typert Gateway's source-mode discovery only
+resolves endpoints whose methods are carried on the service prototype's
+version-1 Remote-method descriptor (what the shipped @Remote decorator
+writes); hand-authored services must attach the same descriptor, which the
+host now does for catalog/protocols/refresh/meta (verified against the real
+runtime TypertRemoteService). The panel was also rebuilt after operator
+feedback: protocol and skill selection moved into popup picker dialogs, the
+page scrolls internally (flex column root + scroll area + pinned action bar),
+the absolute banner-glow overlay and fixed toast were removed (no more
+overlaps), and the remote face is awaited for up to 15 s instead of failing
+when the panel renders before the client-side $mount settles.
+
+0.1.0 — 2026-11-09. Initial release.
