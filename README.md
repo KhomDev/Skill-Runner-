@@ -1,0 +1,98 @@
+# khomdev-skill-runner
+
+Custom DeepSeek Harness (DSH) bundle for the KhomDev audit workspace: a
+**skill-run composer**. Pick a protocol from `PROTOCOLS/`, pick skills from the
+`SKILLS/` collections (Pashov, Trail of Bits, Web3 Bounty Hunting are the
+essential core; every other collection is discovered dynamically), preview the
+exact run prompt, and queue it into a DSH session with one explicit click.
+
+One package, two faces (khomdev-audit-ops pattern):
+
+| Face | File | What it does |
+|---|---|---|
+| Host plugin | `lib/index.js` (package main) | Read-only scans of `SKILLS/` (frontmatter name/description, source path, collection), `.dsh/skills/` (loadability + `dsh-adapted` native markers), and `PROTOCOLS/` (language guess, capped file counts, tests, git branch). Serves the `skillRunner` Typert remote namespace (`catalog` / `protocols` / `meta` / `refresh`). No spawns, no writes. |
+| Browser bundle | `lib/client.js` (`./client` export, `dsh.client` declaration) | The **Skill Runner** web panel: gradient header, protocol cards, collection chips + skill grid with search, run-mode cards (parallel subagent lanes / single pass), operator focus, session picker, live prompt preview, Send / Copy. Sending queues ONE user message via `sessions.using(...).prompt([{type:"text",text}], "queue"|"steer")`. |
+
+The bundle's `cordis.patch.yml` (`dsh.bundle.patch`) inserts the package itself
+as one loader entry — one entry serves both faces.
+
+## Contract (non-negotiable)
+
+- **Read-only host surface.** No subprocess, no file writes, no auditd/auditmem
+  calls. The exhaustive surface is fs reads of the three trees.
+- **The only mutation is the operator's Send click**, which queues one user
+  message into a session the operator picked. Nothing runs from the panel.
+- Every dispatched prompt bakes in the workspace skill boundary: skills are
+  tier-8 advisory (hypotheses for notes, never findings/severity/submission
+  content); no workflow/prehunt/target/submission commands; `PROTOCOLS/` is
+  read-only; PoC execution needs the exact-hash plan approval at
+  `poc_proposal_execution`; outputs go to `engagements/<audit>/notes/` or stay
+  in-session.
+- Prompt text carries repo-relative paths only (host-path sanitization).
+- Payloads expose `workspaceRoot` solely so the panel can preselect the
+  matching session; it is never rendered.
+
+## Layout
+
+```
+package.json          bundle package: main + ./client + dsh.bundle.patch + dsh.client
+cordis.patch.yml      bundle patch (self-insert with config)
+lib/index.js          host plugin (ESM, no build step)
+lib/client.js         browser bundle (factory format, no build step)
+locale/en.json        panel label
+icon.svg              Plugins-page card artwork
+test/test-host.mjs    unit + service assertions over test/fixtures
+test/test-client.mjs  bundle-format + prompt-composer assertions (window shim)
+test/smoke-workspace.mjs  live read-only scan of the real workspace
+```
+
+## Install
+
+1. Plugins page → install from the local path
+   `C:Usersd3faldevkhomdev-skill-runner` (repo root **is** the package), or
+   replicate manually in the profile (`~/.dsh/profiles/desktop`):
+   - `package.json`: `dependencies["khomdev-skill-runner"] = "link:C:/Users/d3fal/dev/khomdev-skill-runner"`
+     and append `"khomdev-skill-runner"` to `dsh.profile.bundles`.
+   - `node_modules/khomdev-skill-runner` → symlink/junction to the repo
+     (relative `../../../../dev/khomdev-skill-runner`, matching audit-ops).
+2. **Restart DSH** — the running composition keeps its old entry list until
+   restart.
+3. Rollback: remove the two package.json edits + the link (or uninstall via
+   the Plugins page after restart).
+
+## Verify after restart
+
+1. Plugins page lists `khomdev-skill-runner` without error.
+2. Sidebar shows **Skill Runner**; the panel loads the live catalog
+   (37 skills / 71 protocols at build time) and the protocol grid renders.
+3. `node test/test-host.mjs`, `node test/test-client.mjs`,
+   `node test/smoke-workspace.mjs` all pass.
+4. Pick a protocol + a few skills, review the preview, Send to the session:
+   the message appears in the chat and the agent starts the run.
+
+## Skill catalog rules
+
+- A skill is **loadable** when its name exists in the workspace project skill
+  root `.dsh/skills/` (what the `skill` tool can load). Non-loadable entries
+  are still selectable: the composed prompt points the agent at the source
+  file to read instead.
+- A skill is **DSH-native** (`⚡`) when its `.dsh/skills/` copy carries
+  `dsh-adapted: true` in frontmatter — the DSH refactor of the upstream
+  Claude-Code skill text (knowledge preserved, tool instructions translated).
+  `.claude/skills/` junctions keep reading the pristine `SKILLS/` source, so
+  Claude Code sessions are unaffected.
+
+## Design notes
+
+- Client wire declarations use `{ mode: "src-json" }` pass-through codecs
+  (no zod client-side), zero-parameter methods only — the prompt is composed
+  client-side by a pure function (`buildPrompt`), unit-tested via the
+  `window.__ModuleLoader__` shim.
+- The host resolves its service base synchronously (bare specifier → DSH
+  runtime path → local fallback), the v0.1.2 audit-ops lesson: registering
+  after an await fails the Cordis fiber start.
+- DSH target: 0.2.0-rc.2 (desktop channel is nightly — re-verify on updates).
+
+## Version
+
+0.1.0 — 2026-11-09.

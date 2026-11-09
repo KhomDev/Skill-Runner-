@@ -1,0 +1,15 @@
+# khomdev-skill-runner bundle layer. Applies after dsh-base. The bundle
+# inserts itself as one loader entry: the package main (lib/index.js) is the
+# host plugin and the same package's dsh.client declaration (lib/client.js) is
+# the browser half — one entry serves both faces (khomdev-audit-ops pattern).
+#
+# The host plugin is read-only: it scans SKILLS/, PROTOCOLS/ and .dsh/skills/,
+# composes run prompts, and serves them as the skillRunner remote namespace.
+# It spawns no processes and writes no files. The only state-changing surface
+# in the whole plugin is the operator's explicit "Send to session" click.
+- insert:
+    - id: skill-runner
+      name: 'khomdev-skill-runner'
+      config:
+        workspaceRoot: 'C:\Users\d3fal\Desktop\hustle\BOUNTY\audit'
+        catalogTtlMs: 60000
